@@ -43,7 +43,6 @@ let package = Package(
                 "LegibleError",
                 .product(name: "Path", package: "Path.swift"), 
                 "SwiftSoup",
-                "Unxip",
                 "Version",
                 .product(name: "XCModel", package: "data"),
                 "XcodesLoginKit",
@@ -61,6 +60,5 @@ let package = Package(
             resources: [
                 .copy("Fixtures"),
             ]),
-        .target(name: "Unxip"),
     ]
 )

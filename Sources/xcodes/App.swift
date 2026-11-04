@@ -240,7 +240,8 @@ struct Xcodes: AsyncParsableCommand {
         @ArgumentParser.Flag(name: [.customShort("p"), .customLong("print-path")], help: "Print the path of the selected Xcode")
         var print: Bool = false
 
-        @Flag(help: "Use the experimental unxip functionality. May speed up unarchiving by up to 2-3x.")
+        // Removed: the in-process unxip did not verify the XIP signature. Kept only to fail loudly.
+        @Flag(help: .hidden)
         var experimentalUnxip: Bool = false
 
         @Flag(help: "Don't ask for superuser (root) permission. Some optional steps of the installation will be skipped.")
@@ -265,6 +266,12 @@ struct Xcodes: AsyncParsableCommand {
 
         @OptionGroup
         var globalColor: GlobalColorOption
+
+        func validate() throws {
+            if experimentalUnxip {
+                throw ValidationError("--experimental-unxip has been removed because it did not verify the Xcode archive's signature. Remove the flag; xcodes now always uses /usr/bin/xip.")
+            }
+        }
 
         func run() async throws {
             configureRainbow(enabled: globalColor.color)
@@ -310,7 +317,7 @@ struct Xcodes: AsyncParsableCommand {
                     _ = try await services.xcodeList.updateAvailableXcodes(dataSource: globalDataSource.dataSource)
                 }
 
-                let xcode = try await services.xcodeInstaller.install(installation, dataSource: globalDataSource.dataSource, downloader: downloader, destination: destination, experimentalUnxip: experimentalUnxip, emptyTrash: emptyTrash, noSuperuser: noSuperuser)
+                let xcode = try await services.xcodeInstaller.install(installation, dataSource: globalDataSource.dataSource, downloader: downloader, destination: destination, emptyTrash: emptyTrash, noSuperuser: noSuperuser)
                 if select {
                     try await selectXcodeAsync(shouldPrint: print, pathOrVersion: xcode.path.string, directory: destination, fallbackToInteractive: false)
                 }

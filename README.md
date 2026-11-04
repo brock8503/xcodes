@@ -75,7 +75,6 @@ xcodes install 11.2 GM seed
 xcodes install 9.0 --path ~/Archive/Xcode_9.xip
 xcodes install --latest-prerelease
 xcodes install --latest --directory "/Volumes/Bag Of Holding/"
-xcodes install --latest --experimental-unxip
 ```
 
 You'll then be prompted to enter your Apple ID username and password. You can also provide these with the `XCODES_USERNAME` and `XCODES_PASSWORD` environment variables.
@@ -148,14 +147,6 @@ Read [the proposal](/XCODE_VERSION.md) of `.xcode-version`.
 - `update`: Update the list of available versions of Xcode
 - `version`: Print the version number of xcodes itself
 - `signout`: Clears the stored username and password
-
-### Experimental Unxip - for faster unxipping
-
-Thanks to the amazing work by [saagarjhi](https://github.com/saagarjha/unxip) - Xcodes now includes the ability to unxip up to 70% faster on some systems.
-
-```sh
-xcodes install --latest --experimental-unxip
-```
 
 ### Shell Completion Scripts
 

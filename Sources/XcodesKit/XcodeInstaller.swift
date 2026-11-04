@@ -3,7 +3,6 @@ import Foundation
 @preconcurrency import Version
 import LegibleError
 import Rainbow
-import Unxip
 import XcodesKit
 
 /// Downloads and installs Xcodes
@@ -86,7 +85,7 @@ public final class XcodeInstaller: Sendable {
     /// A numbered step
     enum InstallationStep: CustomStringConvertible {
         case downloading(version: String, progress: String?, willInstall: Bool)
-        case unarchiving(experimentalUnxip: Bool)
+        case unarchiving
         case moving(destination: String)
         case cleaningArchive(archiveName: String, shouldDelete: Bool)
         case checkingSecurity
@@ -109,15 +108,8 @@ public final class XcodeInstaller: Sendable {
                 } else {
                     return "Downloading Xcode \(version)"
                 }
-            case .unarchiving(let experimentalUnxip):
-                let hint = experimentalUnxip ?
-                    "Using experimental unxip. If you encounter any issues, remove the flag and try again" :
-                    "Using regular unxip. Try passing `--experimental-unxip` for a faster unxip process"
-                return
-                    """
-                    Unarchiving Xcode (This can take a while)
-                    \(hint)
-                    """
+            case .unarchiving:
+                return "Unarchiving Xcode (This can take a while)"
             case .moving(let destination):
                 return "Moving Xcode to \(destination)"
             case .cleaningArchive(let archiveName, let shouldDelete):
@@ -182,12 +174,12 @@ public final class XcodeInstaller: Sendable {
         }
     }
 
-    public func install(_ installationType: InstallationType, dataSource: DataSource, downloader: Downloader, destination: Path, experimentalUnxip: Bool = false, emptyTrash: Bool, noSuperuser: Bool) async throws -> InstalledXcode {
+    public func install(_ installationType: InstallationType, dataSource: DataSource, downloader: Downloader, destination: Path, emptyTrash: Bool, noSuperuser: Bool) async throws -> InstalledXcode {
         let xcode = try await xcodeInstallRetryService.install(
             shouldRetryAfterDamagedArchive: installationType.shouldRetryAfterDamagedArchive,
             attempt: { _ in
                 let (xcode, url) = try await getXcodeArchive(installationType, dataSource: dataSource, downloader: downloader, destination: destination, willInstall: true)
-                return try await installArchivedXcode(xcode, at: url, to: destination, experimentalUnxip: experimentalUnxip, emptyTrash: emptyTrash, noSuperuser: noSuperuser)
+                return try await installArchivedXcode(xcode, at: url, to: destination, emptyTrash: emptyTrash, noSuperuser: noSuperuser)
             },
             onRetryDamagedArchive: { error, _ in
                 Current.logging.log(error.legibleLocalizedDescription.red)
@@ -404,10 +396,10 @@ public final class XcodeInstaller: Sendable {
         )
     }
 
-    public func installArchivedXcode(_ xcode: Xcode, at archiveURL: URL, to destination: Path, experimentalUnxip: Bool = false, emptyTrash: Bool, noSuperuser: Bool) async throws -> InstalledXcode {
+    public func installArchivedXcode(_ xcode: Xcode, at archiveURL: URL, to destination: Path, emptyTrash: Bool, noSuperuser: Bool) async throws -> InstalledXcode {
         let installedXcode: InstalledXcode
         do {
-            installedXcode = try await xcodeArchiveInstallService(experimentalUnxip: experimentalUnxip, destination: destination)
+            installedXcode = try await xcodeArchiveInstallService(destination: destination)
                 .installArchivedXcode(
                     xcode,
                     at: archiveURL,
@@ -421,7 +413,7 @@ public final class XcodeInstaller: Sendable {
                 ) { step in
                     switch step {
                     case .unarchive(.unarchiving):
-                        Current.logging.log(InstallationStep.unarchiving(experimentalUnxip: experimentalUnxip).description)
+                        Current.logging.log(InstallationStep.unarchiving.description)
                     case let .unarchive(.moving(destination)):
                         Current.logging.log(InstallationStep.moving(destination: destination).description)
                     case let .cleaningArchive(archiveName):
@@ -543,10 +535,10 @@ public final class XcodeInstaller: Sendable {
         }
     }
 
-    private func xcodeArchiveInstallService(experimentalUnxip: Bool, destination: Path) -> XcodesKit.XcodeArchiveInstallService {
+    private func xcodeArchiveInstallService(destination: Path) -> XcodesKit.XcodeArchiveInstallService {
         XcodesKit.XcodeArchiveInstallService(
             destinationDirectory: destination,
-            unarchiveService: xcodeUnarchiveService(experimentalUnxip: experimentalUnxip),
+            unarchiveService: xcodeUnarchiveService(),
             validationService: xcodeValidationService,
             fileExists: { path in Current.files.fileExists(atPath: path) },
             makeInstalledXcode: { path in
@@ -604,16 +596,10 @@ public final class XcodeInstaller: Sendable {
             Current.logging.log(installedXcode.path.string)
     }
 
-    private func xcodeUnarchiveService(experimentalUnxip: Bool) -> XcodesKit.XcodeUnarchiveService {
+    private func xcodeUnarchiveService() -> XcodesKit.XcodeUnarchiveService {
         XcodesKit.XcodeUnarchiveService(
             unarchive: { source in
-                if experimentalUnxip, #available(macOS 11, *) {
-                    let output = source.deletingLastPathComponent()
-                    let options = UnxipOptions(input: source, output: output)
-                    try await Unxip(options: options).run()
-                } else {
-                    _ = try await Current.shell.unxip(source)
-                }
+                _ = try await Current.shell.unxip(source)
             },
             fileExists: { path in Current.files.fileExists(atPath: path) },
             moveItem: { source, destination in try Current.files.moveItem(at: source, to: destination) },
