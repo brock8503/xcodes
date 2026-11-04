@@ -91,3 +91,6 @@ fastlane/test_output
 
 iOSInjectionProject/
 
+
+# Locally built binary (installed by ~/.dotfiles/xcodes/setup)
+/bin/
