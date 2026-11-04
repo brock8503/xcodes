@@ -69,6 +69,7 @@ public struct Shell: Sendable {
     public var expandPkg = Shell.shared.expandPkg
     public var createPkg = Shell.shared.createPkg
     public var installPkg = Shell.shared.installPkg
+    public var checkPkgSignature = Shell.shared.checkPkgSignature
     public var installRuntimeImage = Shell.shared.installRuntimeImage
     public var spctlAssess = Shell.shared.spctlAssess
     public var codesignVerify = Shell.shared.codesignVerify
@@ -282,6 +283,9 @@ public struct Files: Sendable {
             loadArchitectures: Files.sharedShell.archs
         ).installedXcodes(in: directory)
     }
+
+    public var makeWorkDirectory: @Sendable (Path) throws -> Path = RuntimePackageInstallService.makeUniqueWorkDirectory
+    public var isSymlink: @Sendable (Path) -> Bool = RuntimePackageInstallService.isSymlink
 }
 
 public struct Network: Sendable {

@@ -234,12 +234,20 @@ final class XcodesKitTests: XCTestCase {
         Current.shell.spctlAssess = { _ in throw ProcessExecutionError(process: Process(), standardOutput: nil, standardError: nil) }
 
         let xcode = Xcode(version: Version("0.0.0")!, url: URL(fileURLWithPath: "/"), filename: "mock", releaseDate: nil)
-        let installedXcode = InstalledXcode(path: Path("/Applications/Xcode-0.0.0.app")!)!
         do {
             _ = try await xcodeInstaller.installArchivedXcode(xcode, at: URL(fileURLWithPath: "/Xcode-0.0.0.xip"), to: Path.root.join("Applications"), emptyTrash: false, noSuperuser: false)
             XCTFail("Expected install to fail security assessment")
         } catch {
-            XCTAssertEqual(error as? XcodeInstaller.Error, XcodeInstaller.Error.failedSecurityAssessment(xcode: installedXcode, output: ""))
+            guard case let .failedSecurityAssessment(failedXcode, output)? = error as? XcodeInstaller.Error else {
+                return XCTFail("Expected failedSecurityAssessment, got \(error)")
+            }
+            // Verification happens on the hidden staging bundle before the final move.
+            XCTAssertEqual(failedXcode.path.parent, Path("/Applications")!)
+            XCTAssertTrue(failedXcode.path.basename().hasPrefix(".Xcode-0.0.0.app.staging-"), failedXcode.path.string)
+            let uuid = String(failedXcode.path.basename().dropFirst(".Xcode-0.0.0.app.staging-".count))
+            XCTAssertNotNil(UUID(uuidString: uuid), failedXcode.path.string)
+            XCTAssertEqual(failedXcode.version, Version("0.0.0+ABC123"))
+            XCTAssertEqual(output, "")
         }
     }
 
@@ -370,7 +378,7 @@ final class XcodesKitTests: XCTestCase {
 
         _ = try await xcodeInstaller.install(.version("0.0.0"), dataSource: .apple, downloader: .urlSession, destination: Path.root.join("Applications"), emptyTrash: false, noSuperuser: false)
         let url = Bundle.module.url(forResource: "LogOutput-FullHappyPath", withExtension: "txt", subdirectory: "Fixtures")!
-        XCTAssertEqual(log.value, try String(contentsOf: url))
+        XCTAssertEqual(normalizingStagingUUID(log.value), try String(contentsOf: url))
     }
 
     func test_InstallLogging_FullHappyPath_NoColor() async throws {
@@ -450,7 +458,7 @@ final class XcodesKitTests: XCTestCase {
 
         _ = try await xcodeInstaller.install(.version("0.0.0"), dataSource: .apple, downloader: .urlSession, destination: Path.root.join("Applications"), emptyTrash: false, noSuperuser: false)
         let url = Bundle.module.url(forResource: "LogOutput-FullHappyPath-NoColor", withExtension: "txt", subdirectory: "Fixtures")!
-        XCTAssertEqual(log.value, try String(contentsOf: url))
+        XCTAssertEqual(normalizingStagingUUID(log.value), try String(contentsOf: url))
     }
 
     func test_InstallLogging_FullHappyPath_NonInteractiveTerminal() async throws {
@@ -533,7 +541,7 @@ final class XcodesKitTests: XCTestCase {
 
         _ = try await xcodeInstaller.install(.version("0.0.0"), dataSource: .apple, downloader: .urlSession, destination: Path.root.join("Applications"), emptyTrash: false, noSuperuser: false)
         let url = Bundle.module.url(forResource: "LogOutput-FullHappyPath-NonInteractiveTerminal", withExtension: "txt", subdirectory: "Fixtures")!
-        XCTAssertEqual(log.value, try String(contentsOf: url))
+        XCTAssertEqual(normalizingStagingUUID(log.value), try String(contentsOf: url))
     }
 
     func test_InstallLogging_AlternativeDirectory() async throws {
@@ -614,7 +622,7 @@ final class XcodesKitTests: XCTestCase {
         _ = try await xcodeInstaller.install(.version("0.0.0"), dataSource: .apple, downloader: .urlSession, destination: Path.home.join("Xcode"), emptyTrash: false, noSuperuser: false)
         let url = Bundle.module.url(forResource: "LogOutput-AlternativeDirectory", withExtension: "txt", subdirectory: "Fixtures")!
         let expectedText = try String(contentsOf: url).replacingOccurrences(of: "/Users/brandon", with: Path.home.string)
-        XCTAssertEqual(log.value, expectedText)
+        XCTAssertEqual(normalizingStagingUUID(log.value), expectedText)
     }
 
     func test_InstallLogging_IncorrectSavedPassword() async throws {
@@ -712,7 +720,7 @@ final class XcodesKitTests: XCTestCase {
 
         _ = try await xcodeInstaller.install(.version("0.0.0"), dataSource: .apple, downloader: .urlSession, destination: Path.root.join("Applications"), emptyTrash: false, noSuperuser: false)
         let url = Bundle.module.url(forResource: "LogOutput-IncorrectSavedPassword", withExtension: "txt", subdirectory: "Fixtures")!
-        XCTAssertEqual(log.value, try String(contentsOf: url))
+        XCTAssertEqual(normalizingStagingUUID(log.value), try String(contentsOf: url))
         XCTAssertEqual(passwordEnvCallCount.value, 2)
         XCTAssertEqual(readSecureLineCallCount.value, 2)
     }
@@ -812,7 +820,7 @@ final class XcodesKitTests: XCTestCase {
         _ = try await xcodeInstaller.install(.version("0.0.0"), dataSource: .apple, downloader: .urlSession, destination: Path.root.join("Applications"), emptyTrash: false, noSuperuser: false)
         let url = Bundle.module.url(forResource: "LogOutput-DamagedXIP", withExtension: "txt", subdirectory: "Fixtures")!
         let expectedText = try String(contentsOf: url).replacingOccurrences(of: "/Users/brandon", with: Path.home.string)
-        XCTAssertEqual(log.value, expectedText)
+        XCTAssertEqual(normalizingStagingUUID(log.value), expectedText)
     }
 
     func test_UninstallXcode() async throws {
@@ -1562,4 +1570,14 @@ final class XcodesKitTests: XCTestCase {
         XCTAssert(xcodesList.availableXcodes == [Self.mockXcode])
     }
 
+}
+
+/// The hardened installer extracts into `.Xcode-<ver>.app.staging-<UUID>`; replace the random UUID
+/// with a stable placeholder so log fixtures can be compared exactly.
+private func normalizingStagingUUID(_ log: String) -> String {
+    log.replacingOccurrences(
+        of: #"\.app\.staging-[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"#,
+        with: ".app.staging-<UUID>",
+        options: .regularExpression
+    )
 }

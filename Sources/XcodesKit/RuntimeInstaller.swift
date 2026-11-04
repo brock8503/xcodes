@@ -220,6 +220,9 @@ public final class RuntimeInstaller: Sendable {
             mountDMG: { try await runtimeService.mountDMG(dmgUrl: $0) },
             unmountDMG: { try await runtimeService.unmountDMG(mountedURL: $0) },
             prepareDirectory: { path in try path.mkdir().setCurrentUserAsOwner() },
+            makeWorkDirectory: { try Current.files.makeWorkDirectory($0) },
+            isSymlink: { Current.files.isSymlink($0) },
+            checkPkgSignature: { try await Current.shell.checkPkgSignature($0) },
             expandPkg: { try await Current.shell.expandPkg($0, $1) },
             createPkg: { try await Current.shell.createPkg($0, $1) },
             installPkg: { packageURL, target in

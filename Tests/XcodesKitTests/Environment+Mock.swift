@@ -31,6 +31,7 @@ extension Shell {
             expandPkg: { _, _ in Shell.processOutputMock },
             createPkg: { _, _ in Shell.processOutputMock },
             installPkg: { _, _ in Shell.processOutputMock },
+            checkPkgSignature: { _ in (0, "Package \"mock.pkg\":\n   Status: signed Apple Software\n", "") },
             installRuntimeImage: { _ in Shell.processOutputMock },
             spctlAssess: { _ in Shell.processOutputMock },
             codesignVerify: { _ in Shell.processOutputMock },
@@ -85,7 +86,9 @@ extension Files {
             createFile: { _, _, _ in return true },
             createDirectory: { _, _, _ in },
             contentsOfDirectory: { _ in [] },
-            installedXcodes: { _ in [] }
+            installedXcodes: { _ in [] },
+            makeWorkDirectory: { $0.join("runtime-install.mock") },
+            isSymlink: { _ in false }
         )
     }
 }

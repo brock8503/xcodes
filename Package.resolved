@@ -1,12 +1,11 @@
 {
-  "originHash" : "ec262a538fb7b5a8c615f4591b3605cc8c6203b3a08572c61cf0a4630bdeeb55",
+  "originHash" : "c86ecace677c23e2d5412c8474840347cb2413aeefeff842cf063b626db8ada6",
   "pins" : [
     {
       "identity" : "asynchttpnetworkservice",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/XcodesOrg/AsyncHTTPNetworkService",
       "state" : {
-        "branch" : "main",
         "revision" : "12e225af8b5dc25afcfabfcf582a165b0581ab19"
       }
     },
@@ -32,8 +31,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kishikawakatsumi/KeychainAccess.git",
       "state" : {
-        "revision" : "8d33ffd6f74b3bcfc99af759d4204c6395a3f918",
-        "version" : "3.2.1"
+        "revision" : "8d33ffd6f74b3bcfc99af759d4204c6395a3f918"
       }
     },
     {
@@ -41,8 +39,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mxcl/LegibleError.git",
       "state" : {
-        "revision" : "bc596702d7ff618c3f90ba480eeb48b3e83a2fbe",
-        "version" : "1.0.6"
+        "revision" : "bc596702d7ff618c3f90ba480eeb48b3e83a2fbe"
       }
     },
     {
@@ -50,8 +47,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kinoroy/LibFido2Swift",
       "state" : {
-        "revision" : "ac8596a852e2b008c5902a521cf4d9c7f0f05fba",
-        "version" : "0.1.6"
+        "revision" : "ac8596a852e2b008c5902a521cf4d9c7f0f05fba"
       }
     },
     {
@@ -59,8 +55,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mxcl/Path.swift.git",
       "state" : {
-        "revision" : "74ec90bbe50a3376e399286fed48b60db9b91bb1",
-        "version" : "1.6.0"
+        "revision" : "74ec90bbe50a3376e399286fed48b60db9b91bb1"
       }
     },
     {
@@ -68,8 +63,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/onevcat/Rainbow.git",
       "state" : {
-        "revision" : "626c3d4b6b55354b4af3aa309f998fae9b31a3d9",
-        "version" : "3.2.0"
+        "revision" : "626c3d4b6b55354b4af3aa309f998fae9b31a3d9"
       }
     },
     {
@@ -77,8 +71,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
-        "revision" : "9f39744e025c7d377987f30b03770805dcb0bcd1",
-        "version" : "1.1.4"
+        "revision" : "9f39744e025c7d377987f30b03770805dcb0bcd1"
       }
     },
     {
@@ -93,9 +86,8 @@
     {
       "identity" : "swift-srp",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/xcodesorg/swift-srp",
+      "location" : "https://github.com/XcodesOrg/swift-srp",
       "state" : {
-        "branch" : "main",
         "revision" : "543aa0122a0257b992f6c7d62d18a26e3dffb8fe"
       }
     },
@@ -104,8 +96,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup.git",
       "state" : {
-        "revision" : "aeb5b4249c273d1783a5299e05be1b26e061ea81",
-        "version" : "2.0.0"
+        "revision" : "aeb5b4249c273d1783a5299e05be1b26e061ea81"
       }
     },
     {
@@ -113,26 +104,23 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mxcl/Version.git",
       "state" : {
-        "revision" : "087c91fedc110f9f833b14ef4c32745dabca8913",
-        "version" : "1.0.3"
+        "revision" : "087c91fedc110f9f833b14ef4c32745dabca8913"
       }
     },
     {
       "identity" : "xcodeskit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/XcodesOrg/XcodesKit.git",
+      "location" : "https://github.com/brock8503/XcodesKit.git",
       "state" : {
-        "revision" : "4d3c6093980978b74c3fa42fc1b90cd1c34ac911",
-        "version" : "1.1.0"
+        "revision" : "df8320ad814056f1aa204d494e71df94e7422fb4"
       }
     },
     {
       "identity" : "xcodesloginkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/XcodesOrg/XcodesLoginKit.git",
+      "location" : "https://github.com/brock8503/XcodesLoginKit.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "929f9aac3140caf7b64cbb5385f4f645c5f9913d"
+        "revision" : "cef69dddbda365fa8d54c6d85592bcef615fcf4b"
       }
     },
     {
