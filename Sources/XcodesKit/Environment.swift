@@ -391,6 +391,7 @@ public struct Logging: Sendable {
 
 public struct Keychain: Sendable {
     private static let keychain = KeychainAccess.Keychain(service: "com.robotsandpencils.xcodes")
+        .accessibility(.whenUnlockedThisDeviceOnly)
 
     public var getString: @Sendable (String) throws -> String? = { try keychain.getString($0) }
     public func getString(_ key: String) throws -> String? {
