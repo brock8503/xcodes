@@ -99,6 +99,8 @@ struct Xcodes: AsyncParsableCommand {
     }
 
     static func main() async {
+        // Must run before any child process is spawned.
+        SensitiveEnvironment.removeFromProcessEnvironment()
         migrateApplicationSupportFiles()
         do {
             var command = try parseAsRoot()

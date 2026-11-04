@@ -182,7 +182,7 @@ public struct Shell: Sendable {
     }
 
     public var env: @Sendable (String) -> String? = { key in
-        ProcessInfo.processInfo.environment[key]
+        SensitiveEnvironment.value(key)
     }
     public func env(_ key: String) -> String? {
         env(key)
